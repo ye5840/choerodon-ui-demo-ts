@@ -1,4 +1,5 @@
 import { DataSet } from 'choerodon-ui/pro';
+import { FieldType } from 'choerodon-ui/pro/lib/data-set/enum';  // 添加 FieldType 导入
 export const userDS = new DataSet({
     // 指定 DataSet 初始化后自动查询
     autoQuery: true,
@@ -10,36 +11,62 @@ export const userDS = new DataSet({
     name: 'user',
     // 数据对象名，默认值 'rows'
     dataKey: 'content',
+    queryFields: [
+      {
+        name: 'name',
+        type: FieldType.string,
+        label: '姓名',
+      },
+      {
+        name: 'age',
+        type: FieldType.number,
+        label: '年龄',
+        max: 100,
+        step: 1,
+      },
+      {
+        name: 'email',
+        type: FieldType.string,
+        label: '邮箱',
+        help: '用户邮箱，可以自动补全',
+      }
+    ],
     // DataSet 中包含的字段，对应上述后端数据中每条记录中的字段
     fields: [
-        { name: 'id', type: 'number' },
-        { name: 'name', type: 'string', label: '姓名', help: '主键，区分用户' },
-        { name: 'code', type: 'string', label: '编码' },
-        { 
+        { name: 'id', type: FieldType.number },
+        { name: 'name', type: FieldType.string, label: '姓名', help: '主键，区分用户', required: true, },
+        { name: 'code', type: FieldType.string, label: '编码' },
+        {
           name: 'sex', 
-          type: 'string', 
+          type: FieldType.string, 
           label: '性别', 
-          lookupUrl: 'https://hzero-test.open.hand-china.com/mock/EMPLOYEE_GENDER', 
+          lookupUrl: 'https://hzero-test.open.hand-china.com/mock/EMPLOYEE_GENDER',
+          lookupAxiosConfig: {  // 添加lookupAxiosConfig配置
+            method: 'GET'
+          },
           computedProps: {
             required: ({ record }) => record.get('age') > 18,
           }
         },
-        { name: 'active', label: '状态', type: 'boolean' },
+        { name: 'active', label: '状态', type: FieldType.boolean },
         {
           name: 'age',
-          type: 'number',
+          type: FieldType.number,
           label: '年龄',
-          help: '用户年龄，可以排序',
+          max: 100,
+          min: 1,
+          step: 1,
+          help: '用户年龄，可以排序'
         },
         {
           name: 'email',
-          type: 'string',
+          type: FieldType.email,
           label: '邮箱',
           help: '用户邮箱，可以自动补全',
         },
         {
           name: 'startDate',
-          type: 'date',
+          type: FieldType.date,
           label: '加入日期',
         }
     ],

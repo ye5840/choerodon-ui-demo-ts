@@ -47,7 +47,7 @@ module.exports = {
               '@rem-root-px': '16px',
               '@rem-root-ratio': '1',
               '@rem-root-scale': '1',
-              '@primary-color': '#1DA57A'
+              // '@primary-color': '#1DA57A'
             },
           },
         },
