@@ -1,105 +1,80 @@
-import './App.css';
-import React, { useMemo, useCallback, useState } from 'react';
-import { Table, AutoComplete, Button } from 'choerodon-ui/pro';
+import React from 'react'
+import { Lov } from 'choerodon-ui/pro';
 import DataSet from 'choerodon-ui/pro/lib/data-set';
-import { FieldType } from 'choerodon-ui/pro/lib/data-set/enum';  // 添加 FieldType 导入
-import { userDS } from './dataset'
+import { FieldType } from 'choerodon-ui/pro/lib/data-set/enum';
+import { configure } from 'choerodon-ui';
 
-function App() {
-   // 使用上章 DS 配置，new DS 实例
-  const tableDS = useMemo(()=> {
-    return userDS;
-  }, []);
+export default function App() {
+  // const lovDefineTemple = {
+  //   code: 'LOV_CODE', // lovCode 值
+  //   description: '快码',
+  //   lovItems: [
+  //     {
+  //       display: '代码', // 表格列列头显示的名称
+  //       gridFieldName: 'code', // 表格列的 key 和 name
+  //       gridFieldWidth: 300,	// 列默认宽度
+  //       gridFieldAlign: 'left', // 列文字对齐方式
+  //       gridField: 'Y', // 是否为视图配置信息
+  //       gridFieldSequence: 1, // 列序号
+  //     },
+  //     {
+  //       display: '描述',
+  //       gridFieldName: 'description',
+  //       gridFieldWidth: 300,
+  //       gridFieldAlign: 'left',
+  //       gridField: 'Y',
+  //       gridFieldSequence: 2,
+  //     },
+  //   ], // 表格列信息
+  //   placeholder: '请选择快码', // Lov 输入框 placeholder 
+  //   title: '父级快码', // Lov 弹出框标题
+  //   textField: 'description', // 显示字段
+  //   valueField: 'code', // 值字段
+  //   width: 710, // 表格宽度
+  //   lovPageSize: '10', // Lov 弹出框默认页数
+  // };
 
-  const emailOptionDS = useMemo(() => {
-    return new DataSet({
-      fields: [
-        {
-          name: 'value',
-          type: FieldType.string,
-        },
-        {
-          name: 'meaning',
-          type: FieldType.string,
-        },
-      ],
-    });
-  }, []);
-
-  const handleValueChange = useCallback((v: { target: { value: any; }; }) => {
-    const { value } = v.target;
-    const suffixList = ['@qq.com', '@163.com', '@hand-china.com'];
-    if (value.indexOf('@') !== -1) {
-    // 如果输入值中包含 @ 不配置数据，自定义输入
-      emailOptionDS.loadData([]);
-    } else {
-      emailOptionDS.loadData(
-        suffixList.map((suffix) => ({
-          value: `${value}${suffix}`,
-          meaning: `${value}${suffix}`,
-        })),
-      );
-    }
-  }, [emailOptionDS]);
-
-  // 表格列配置
-  const columns = useMemo(() => {
-    return [
-      { name: 'name', editor: true },
-      { name: 'age', editor: true, sortable: true },
-      { name: 'sex', editor: true },
-      { 
-        name: 'email', 
-        editor: () => {
-          return (
-            <AutoComplete
-              onFocus={handleValueChange}
-              onInput={handleValueChange}
-              options={emailOptionDS}
-            />
-          );
-        }
-      },
-      { name: 'code', editor: true },
-      { name: 'startDate', editor: true },
-      { name: 'active', editor: true },
-    ];
-  }, [emailOptionDS, handleValueChange]);
-
-  const [consoleValue, setConsoleValue] = useState('');
-  const toDataButton = (
-    <Button onClick={() => {
-      setConsoleValue(tableDS.toData())
-      console.log(consoleValue);
-    }}>
-      toData
-    </Button>
-  );
-  const toJSONDataButton = (
-    <Button onClick={() => {
-      setConsoleValue(tableDS.toJSONData())
-      console.log(consoleValue);
-    }}>
-      toJSONData
-    </Button>
-  );
-  const setQueryParamButton = (
-    <Button onClick={() => tableDS.setQueryParameter('customPara', 'test')}>
-      setQueryParameter
-    </Button>
-  );
+  // const ds = new DataSet({
+  //   autoCreate: true,
+  //   fields: [
+  //     {
+  //       name: 'code',
+  //       ...lovDefineTemple
+  //     }
+  //   ]
+  // })
+  // const ds = new DataSet({
+  //   autoCreate: true,
+  //   fields: [
+  //     {
+  //       name: 'code',
+  //       textField: 'code',
+  //       type: FieldType.object,
+  //       lovCode: 'LOV_CODE',
+  //       lovDefineUrl: code => `/test_define/lov/lov_define?code=${code}`, // 视图配置接口自定义
+  //       lovQueryUrl: code => `/test_query/lov/dataset/${code}`, // 查询数据接口自定义
+  //     },
+  //   ],
+  // });
+  configure({
+    // 配置 axios config 配置，批量请求接口为 GET 类型，接口地址后面拼接上批量视图配置查询的 lovCode
+    lovDefineBatchAxiosConfig: (codes) => {
+      return {
+        url: 'https://hzero-test.open.hand-china.com/mock/lov-views/batch2',
+        method: 'GET',
+        params: codes.reduce((obj, val) => {
+          obj[val] = val;
+          return obj;
+        }, {}),
+      };
+    },
+    // 可通过 lovCode 和 field 字段信息判断是否进行批量视图配置查询
+    useLovDefineBatch: (lovCode, field) => {
+      return true;
+    },
+  });
+  
   return (
-    <div style={{ width: 1200, padding: 100 }}>
-      <h1>C7N Pro Table</h1>
-      <Table
-        queryBar="professionalBar"
-        queryFieldsLimit={2}
-        buttons={['add', 'query', 'save', 'delete', 'reset', toDataButton, toJSONDataButton, setQueryParamButton]}
-        dataSet={tableDS}
-        columns={columns}
-      />
-    </div>
-  );
+    <Lov dataSet={ds} />
+  )
 }
-
-export default App;
